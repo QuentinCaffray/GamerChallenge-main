@@ -112,7 +112,7 @@ export default function AuthRegister() {
             <input
               type="text"
               value={userName}
-              placeholder="QuentinBG"
+              placeholder="Pseudo"
               onChange={(e) => setUserName(e.target.value)}
               id="userName"
               className="placeholder:text-foreground/40"
@@ -124,7 +124,7 @@ export default function AuthRegister() {
             <input
               type="email"
               value={userEmail}
-              placeholder="quentin@exemple.com"
+              placeholder="mail@example.com"
               onChange={(e) => setUserEmail(e.target.value)}
               id="email"
               className="placeholder:text-foreground/40"
