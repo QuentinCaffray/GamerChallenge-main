@@ -1,0 +1,20 @@
+### 1. Login avec Charlie (user qu'on va bannir)
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "charlie@example.com",
+  "password": "Test1234!"
+}
+
+### 2. Teste une route protégée AVANT ban (copie le token de la réponse ↑)
+GET http://localhost:3000/profile
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliZGZlYy1mYzUzLTcwMWQtYjMxNC1iNzI4Njc5NWY4ZjQiLCJ1c2VybmFtZSI6ImNoYXJsaWUiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc2ODk4ODQyOCwiZXhwIjoxNzY5NTkzMjI4fQ.rwR7JwDGGzycfwYVrJQan8BQR3MTK7xETbhooSZdGX4
+
+### 3. Bannis Charlie en BDD
+# Commande à lancer dans ton terminal :
+# docker compose exec my-little-db psql -U gcpgdbadmin -d gamerchallengedb -c "UPDATE users SET is_banned = true, banned_at = NOW() WHERE email = 'charlie@example.com';"
+
+### 4. Réessaie la même requête APRÈS ban - doit retourner 403
+GET http://localhost:3000/profile
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliZGZlYy1mYzUzLTcwMWQtYjMxNC1iNzI4Njc5NWY4ZjQiLCJ1c2VybmFtZSI6ImNoYXJsaWUiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc2ODk4ODQyOCwiZXhwIjoxNzY5NTkzMjI4fQ.rwR7JwDGGzycfwYVrJQan8BQR3MTK7xETbhooSZdGX4

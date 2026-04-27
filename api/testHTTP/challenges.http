@@ -1,0 +1,173 @@
+### Variables
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliZGFmOC02M2IzLTcwMGQtOTU3OC0wNWY4ZTViYTYzM2IiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzY4OTA1NTUzLCJleHAiOjE3Njk1MTAzNTN9.GYYWL48fOuDBQ65BLygrf9sldUn7VsmlVs8edMN00Dg
+
+### ============================================
+### PHASE 1 : Nouveau jeu → Création en BDD
+### ============================================
+
+### 1.1 Vérifier que Hollow Knight n'existe PAS (404)
+GET {{baseUrl}}/games/hollow-knight
+
+### 1.2 Créer 1er challenge avec Hollow Knight
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Hollow Knight - No Damage",
+  "scoreFormat": "SCORE",
+  "description": "Complete without damage",
+  "gameId": 22321,
+  "gameTitle": "Hollow Knight",
+  "gameSlug": "hollow-knight",
+  "gameImageUrl": "https://media.rawg.io/media/games/4cf/4cfc6b7f1850590a4634b08bfab308ab.jpg"
+}
+
+### 1.3 Vérifier que Hollow Knight EXISTE (200)
+GET {{baseUrl}}/games/hollow-knight
+
+### 1.4 Vérifier le nombre total de jeux (doit avoir Hollow Knight dans la liste)
+GET {{baseUrl}}/games
+
+
+### ============================================
+### PHASE 2 : Jeu existant → Pas de duplication
+### ============================================
+
+### 2.1 Créer 2e challenge avec le MÊME jeu (Hollow Knight)
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Hollow Knight - Steel Soul",
+  "scoreFormat": "TIME",
+  "description": "Complete Steel Soul mode",
+  "gameId": 22321,
+  "gameTitle": "Hollow Knight",
+  "gameSlug": "hollow-knight",
+  "gameImageUrl": "https://media.rawg.io/media/games/4cf/4cfc6b7f1850590a4634b08bfab308ab.jpg"
+}
+
+### 2.2 Vérifier que Hollow Knight a 2 challenges
+GET {{baseUrl}}/games/hollow-knight
+
+### 2.3 Vérifier le nombre total de jeux (doit toujours être 1 jeu Hollow Knight)
+GET {{baseUrl}}/games
+
+
+### ============================================
+### PHASE 3 : Nouveau jeu différent → Ajout en BDD
+### ============================================
+
+### 3.1 Vérifier que Celeste n'existe PAS (404)
+GET {{baseUrl}}/games/celeste
+
+### 3.2 Créer challenge avec Celeste
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Celeste - All B-Sides",
+  "scoreFormat": "TIME",
+  "description": "Complete all B-Side levels",
+  "gameId": 22636,
+  "gameTitle": "Celeste",
+  "gameSlug": "celeste",
+  "gameImageUrl": "https://media.rawg.io/media/games/9e5/9e52a797f049e701d4eee84774a99007.jpg"
+}
+
+### 3.3 Vérifier que Celeste EXISTE (200)
+GET {{baseUrl}}/games/celeste
+
+### 3.4 Vérifier le nombre total de jeux (doit avoir 2 jeux maintenant)
+GET {{baseUrl}}/games
+
+
+### ============================================
+### PHASE 4 : Validation des données
+### ============================================
+
+### 4.1 Vérifier les infos de Hollow Knight
+# Attendu :
+# - id: "22321"
+# - title: "Hollow Knight"
+# - slug: "hollow-knight"
+# - imageUrl: correct
+# - 2 challenges
+GET {{baseUrl}}/games/hollow-knight
+
+### 4.2 Vérifier les infos de Celeste
+# Attendu :
+# - id: "22636"
+# - title: "Celeste"
+# - slug: "celeste"
+# - imageUrl: correct
+# - 1 challenge
+GET {{baseUrl}}/games/celeste
+
+### 4.3 Liste tous les challenges (doit avoir 3 challenges)
+GET {{baseUrl}}/challenges
+
+
+### ============================================
+### PHASE 5 : Cas d'erreur
+### ============================================
+
+### 5.1 Sans gameId (400)
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Test",
+  "scoreFormat": "SCORE",
+  "description": "Test",
+  "gameTitle": "Test Game",
+  "gameSlug": "test-game",
+  "gameImageUrl": ""
+}
+
+### 5.2 Sans gameTitle (400)
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Test",
+  "scoreFormat": "SCORE",
+  "description": "Test",
+  "gameId": 12345,
+  "gameSlug": "test-game",
+  "gameImageUrl": ""
+}
+
+### 5.3 Sans gameSlug (400)
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Test",
+  "scoreFormat": "SCORE",
+  "description": "Test",
+  "gameId": 12345,
+  "gameTitle": "Test Game",
+  "gameImageUrl": ""
+}
+
+### 5.4 Sans auth (401)
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+
+{
+  "title": "Test",
+  "scoreFormat": "SCORE",
+  "description": "Test",
+  "gameId": 12345,
+  "gameTitle": "Test Game",
+  "gameSlug": "test-game",
+  "gameImageUrl": ""
+}

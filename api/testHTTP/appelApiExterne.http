@@ -1,0 +1,70 @@
+### Variables
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliZGFlZC0zOTAyLTc3MGUtOTJiOC01MjdkYmE1ZGQwMjciLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzY4OTA1MTA1LCJleHAiOjE3Njk1MDk5MDV9.myFGIE2MKG0KAXbkTxsEOVrkN5-qDs0bEAlLxH261hI
+
+### ============================================
+### TEST : Jeu inexistant → créé en BDD
+### ============================================
+
+### 1. Vérifier que le jeu n'existe PAS encore (doit retourner 404)
+GET {{baseUrl}}/games/hollow-knight
+
+### 2. Créer un challenge avec ce jeu (infos de l'API RAWG)
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "No Damage Hollow Knight Run",
+  "scoreFormat": "SCORE",
+  "description": "Complete without taking damage",
+  "gameId": 22321,
+  "gameTitle": "Hollow Knight",
+  "gameSlug": "hollow-knight",
+  "gameImageUrl": "https://media.rawg.io/media/games/4cf/4cfc6b7f1850590a4634b08bfab308ab.jpg"
+}
+
+### 3. Vérifier que le jeu EXISTE maintenant en BDD (doit retourner 200)
+GET {{baseUrl}}/games/hollow-knight
+```
+
+---
+
+## Résultats attendus
+
+**Étape 1 :**
+```
+404 Not Found
+{ "status": "error", "message": "Game not found" }
+```
+
+**Étape 2 :**
+```
+201 Created
+{
+  "challenge": {
+    "id": "...",
+    "title": "No Damage Hollow Knight Run",
+    "gameId": "22321",
+    ...
+  }
+}
+```
+
+**Étape 3 :**
+```
+200 OK
+{
+  "game": {
+    "id": "22321",
+    "slug": "hollow-knight",
+    "title": "Hollow Knight",
+    "imageUrl": "https://media.rawg.io/media/games/4cf/...",
+    "challenges": [
+      {
+        "title": "No Damage Hollow Knight Run",
+        ...
+      }
+    ]
+  }
+}

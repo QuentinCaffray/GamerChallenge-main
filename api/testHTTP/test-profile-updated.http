@@ -1,0 +1,30 @@
+### Variables
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliYmNkMS0xNDQ0LTcyZWQtYjVhNS05Yzc4YzYxNjk1ZGUiLCJlbWFpbCI6InRlc3R1c2VyQGV4YW1wbGUuY29tIiwiaWF0IjoxNzY4Mzk5Mzk5LCJleHAiOjE3NjkwMDQxOTl9.yWAi1iR9DTekmJqwwhkwJ27D-9FYi5WMfJ1sc2Y1SB0
+
+### 1. GET Profile - devrait retourner user + stats + challenges + participations
+GET {{baseUrl}}/profile
+Authorization: Bearer {{token}}
+
+### 2. PATCH Profile - mettre à jour username
+PATCH {{baseUrl}}/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "username": "newusername"
+}
+
+### 3. PATCH Profile - mettre à jour email et password
+PATCH {{baseUrl}}/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "newemail@example.com",
+  "password": "NewPassword123!"
+}
+
+### 4. GET Profile après update
+GET {{baseUrl}}/profile
+Authorization: Bearer {{token}}

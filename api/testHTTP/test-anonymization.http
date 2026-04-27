@@ -1,0 +1,45 @@
+### Variables
+@baseUrl = http://localhost:3000
+@email = test-deletion@example.com
+@username = testuser
+@password = Test1234!
+
+### 1. Inscription (créer un user de test)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### 2. Connexion (récupérer le token)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 3. Extraire le token de la réponse précédente
+@token = {{login.response.body.token}}
+
+### 4. Vérifier le profil AVANT suppression (optionnel)
+GET {{baseUrl}}/profile
+Authorization: Bearer {{token}}
+
+### 5. Supprimer le profil (anonymisation)
+DELETE {{baseUrl}}/profile
+Authorization: Bearer {{token}}
+
+### 6. Essayer de se reconnecter (doit échouer car anonymisé)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}

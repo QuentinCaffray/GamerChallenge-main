@@ -1,0 +1,207 @@
+@import 'tailwindcss';
+@layer theme, base, components, utilities;
+
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+  scrollbar-width: thin;
+  scrollbar-color: var(--button-select) var(--background);
+}
+
+:root {
+  --background: #f9fafb;
+  --foreground: #1a1a1a;
+  --background-header: #e4e7ee;
+  --header-button-area: #e4e7ee;
+  --button-area: #e4e7ee;
+  --button-select: color-mix(in srgb, #8554da 80%, transparent);
+  --button-game-challenge: color-mix(in srgb, #8554da 80%, transparent);
+  --button-game-challenge-hover: #8554da;
+  --button-delete: #b91c1c;
+  --button-delete-hover: #ff0000;
+  --searchbar-color: #6b3cf615;
+  --modal-filter-searchebar: #e4e7ee;
+  --profile-modify-text-area: var(--color-slate-400);
+  --profile-save-button: var(--color-green-600);
+  --danger-button: var(--color-red-700);
+  --challenge-slug-detail-card: var(--color-slate-950);
+  --leadboard-first: #d4af37;
+  --leadboard-second: #9ca3af;
+  --leadboard-third: #b87333;
+  --leadboard-mix-one: #ffffff;
+  --leadboard-mix-two: #e6dcff;
+  --leadboard-me: #97b0e4;
+  --text-hover: #fff8e1;
+  --error-text-message: var(--color-red-400);
+  --error-area-message: color-mix(in srgb, var(--color-red-500) 10%, transparent);
+  --error-border-message: color-mix(in srgb, var(--color-red-500) 50%, transparent);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Leaderboard animation podium*/
+  --animate-twinkle-1: twinkle 2s ease-in-out 0s infinite;
+  --animate-twinkle-2: twinkle 2.5s ease-in-out 0.3s infinite;
+  --animate-twinkle-3: twinkle 3s ease-in-out 0.6s infinite;
+  --animate-twinkle-4: twinkle 2.2s ease-in-out 0.9s infinite;
+  --animate-twinkle-5: twinkle 2.8s ease-in-out 1.2s infinite;
+  --animate-twinkle-6: twinkle 3.2s ease-in-out 1.5s infinite;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #0c1326;
+    --foreground: #ffffff;
+    --background-header: #0c1326;
+    --header-button-area: #1f283b;
+    --button-area: #1f283b;
+    --button-select: #7c39ed;
+    --button-game-challenge: color-mix(in srgb, #8554da 80%, transparent);
+    --button-game-challenge-hover: #8554da;
+    --button-delete: #b91c1c;
+    --button-delete-hover: #ff0000;
+    --searchbar-color: #6203d721;
+    --modal-filter-searchebar: #1f283b;
+    --profile-modify-text-area: var(--color-slate-400);
+    --profile-save-button: var(--color-green-600);
+    --danger-button: var(--color-red-700);
+    --leadboard-first: #d4af37;
+    --leadboard-second: #9ca3af;
+    --leadboard-third: #b87333;
+    --leadboard-mix-one: #1f283b;
+    --leadboard-mix-two: #b386ff;
+    --leadboard-me: #1f283b;
+    --text-hover: #fff8e1;
+    --error-text-message: var(--color-red-400);
+    --error-area-message: color-mix(in srgb, var(--color-red-500) 10%, transparent);
+    --error-border-message: color-mix(in srgb, var(--color-red-500) 50%, transparent);
+  }
+}
+.dark {
+  --background: #1f283b;
+  --foreground: #ffffff;
+  --background-header: #0c1326;
+  --header-button-area: #1f283b;
+  --button-area: #0c1326;
+  --button-select: #7c39ed;
+  --button-game-challenge: color-mix(in srgb, var(--color-amber-600) 80%, transparent);
+  --button-game-challenge-hover: var(--color-amber-600);
+  --button-delete: #991b1b;
+  --button-delete-hover: #b91c1c;
+  --searchbar-color: #6203d721;
+  --modal-filter-searchebar: #1f283b;
+  --profile-modify-text-area: var(--color-slate-400);
+  --profile-save-button: var(--color-green-600);
+  --danger-button: var(--color-red-700);
+  --leadboard-first: #d4af37;
+  --leadboard-second: #9ca3af;
+  --leadboard-third: #b87333;
+  --leadboard-mix-one: #1f283b;
+  --leadboard-mix-two: #b386ff;
+  --leadboard-me: #223764;
+  --text-hover: #fff8e1;
+  --error-text-message: var(--color-red-400);
+  --error-area-message: color-mix(in srgb, var(--color-red-500) 10%, transparent);
+  --error-border-message: color-mix(in srgb, var(--color-red-500) 50%, transparent);
+}
+
+/* animation keyframe for the leaderboard stars podium*/
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes rainbow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-rainbow {
+  animation: rainbow 3s linear infinite;
+}
+
+body {
+  background: radial-gradient(ellipse at top, #f2f0f5 0%, #f8f7fa 50%, #efecf3 100%);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+html.dark body {
+  background: linear-gradient(
+    315deg,
+    #2d1b4e 0%,
+    #261a3f 20%,
+    #1f283b 50%,
+    #18203a 80%,
+    #0c1326 100%
+  );
+  background-attachment: fixed;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+.animate-fadeInOut {
+  animation: fadeInOut 2s ease-in-out forwards;
+}
+
+/* Animation pulse glow pour le bouton Create */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(133, 84, 218, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(133, 84, 218, 0.7),
+      0 0 40px rgba(212, 175, 55, 0.3);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Animation shimmer pour effet de lumière */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

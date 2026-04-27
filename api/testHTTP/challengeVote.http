@@ -1,0 +1,68 @@
+### Variables (modifie selon ton setup)
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliZGZlYy1mYzYwLTcyNzgtOGVkMy05NWM2ODVjNTA4ZTgiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzY5MTY0MDk5LCJleHAiOjE3Njk3Njg4OTl9.91GPondalKPO0XgSNvT_kou6Q70xF5GedF5mspOb-nk
+@challengeSlug = d2-raid-flawless
+@challengeId = 019bdfec-fd36-77c2-9be1-5feee291090e
+
+
+### 1. GET Challenge (user NON connecté)
+GET {{baseUrl}}/challenges/{{challengeSlug}}
+Content-Type: application/json
+
+
+### 2. GET Challenge (user connecté - DOIT afficher hasVoted)
+GET {{baseUrl}}/challenges/{{challengeSlug}}
+Content-Type: application/json
+Cookie: accessToken={{token}}
+
+
+### 3. POST Vote (voter pour le challenge)
+POST {{baseUrl}}/challengeVote/challenges/{{challengeId}}/vote
+Content-Type: application/json
+Cookie: accessToken={{token}}
+
+
+### 4. GET Challenge APRES vote (hasVoted DOIT être true)
+GET {{baseUrl}}/challenges/{{challengeSlug}}
+Content-Type: application/json
+Cookie: accessToken={{token}}
+
+
+### 5. DELETE Unvote (retirer son vote)
+DELETE {{baseUrl}}/challengeVote/challenges/{{challengeId}}/vote
+Content-Type: application/json
+Cookie: accessToken={{token}}
+
+
+### 6. GET Challenge APRES unvote (hasVoted DOIT être false)
+GET {{baseUrl}}/challenges/{{challengeSlug}}
+Content-Type: application/json
+Cookie: accessToken={{token}}
+
+### ===== TESTS PARTICIPATION =====
+
+@participationId = 019bdfec-ff0c-718c-8669-2cbbba281f05
+
+
+### 7. POST Vote participation (Frank)
+POST {{baseUrl}}/participationVote/participations/{{participationId}}/vote
+Content-Type: application/json
+Cookie: accessToken={{token}}
+
+
+### 8. GET Challenge APRES vote participation (hasVoted de Frank DOIT être true)
+GET {{baseUrl}}/challenges/{{challengeSlug}}
+Content-Type: application/json
+Cookie: accessToken={{token}}
+
+
+### 9. DELETE Unvote participation
+DELETE {{baseUrl}}/participationVote/participations/{{participationId}}/vote
+Content-Type: application/json
+Cookie: accessToken={{token}}
+
+
+### 10. GET Challenge APRES unvote (hasVoted de Frank DOIT être false)
+GET {{baseUrl}}/challenges/{{challengeSlug}}
+Content-Type: application/json
+Cookie: accessToken={{token}}

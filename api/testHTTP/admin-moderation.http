@@ -1,0 +1,88 @@
+### Variables
+@baseUrl = http://localhost:3000
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliZGZlYy1mYzYwLTcyNzgtOGVkMy05NWM2ODVjNTA4ZTgiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzY4OTg5NzcwLCJleHAiOjE3Njk1OTQ1NzB9.0QYHOV0vhopXtjoxLmLvDGlNhTQlttYyyW32in3ALmM
+@charlieId = 019bdfec-fc53-701d-b314-b7286795f8f4
+
+###############################################
+# SETUP : Login admin pour récupérer le token
+###############################################
+
+### 1. Login en tant qu'admin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Test1234!"
+}
+
+# ↑ Copie le accessToken dans la réponse et remplace @adminToken en haut
+
+###############################################
+# GESTION DES USERS
+###############################################
+
+### 2. Récupérer tous les users (pour voir les IDs)
+GET {{baseUrl}}/moderation/users
+Cookie: accessToken={{adminToken}}
+
+# ↑ Repère l'ID de Charlie et remplace @charlieId en haut
+
+### 3. Bannir Charlie
+PATCH {{baseUrl}}/moderation/users/{{charlieId}}/ban
+Cookie: accessToken={{adminToken}}
+
+# Résultat attendu : 200 OK, "User banned successfully"
+
+### 4. Vérifier que Charlie ne peut plus se connecter
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "charlie@example.com",
+  "password": "Test1234!"
+}
+
+# Résultat attendu : 403 Forbidden, "User account banned..."
+
+### 5. Débannir Charlie
+PATCH {{baseUrl}}/moderation/users/{{charlieId}}/unban
+Cookie: accessToken={{adminToken}}
+
+# Résultat attendu : 200 OK, "User unbanned successfully"
+
+### 6. Vérifier que Charlie peut à nouveau se connecter
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "charlie@example.com",
+  "password": "Test1234!"
+}
+
+# Résultat attendu : 200 OK avec token
+
+###############################################
+# TESTS D'ERREURS
+###############################################
+
+### 7. Tenter de bannir un user déjà banni (doit échouer)
+# (Re-bannis Charlie d'abord avec la requête #3, puis relance celle-ci)
+PATCH {{baseUrl}}/moderation/users/{{charlieId}}/ban
+Cookie: accessToken={{adminToken}}
+
+# Résultat attendu : 400 Bad Request, "User is already banned"
+
+### 8. Tenter de se bannir soi-même (doit échouer)
+# (Récupère l'ID de l'admin depuis la requête #2, puis remplace ICI_ID_ADMIN)
+PATCH {{baseUrl}}/moderation/users/ICI_ID_ADMIN/ban
+Cookie: accessToken={{adminToken}}
+
+# Résultat attendu : 400 Bad Request, "You cannot ban yourself"
+
+### 9. Tenter de débannir un user non banni (doit échouer)
+# (Assure-toi que Charlie est débanni avec #5, puis relance celle-ci)
+PATCH {{baseUrl}}/moderation/users/{{charlieId}}/unban
+Cookie: accessToken={{adminToken}}
+
+# Résultat attendu : 400 Bad Request, "User is not banned"

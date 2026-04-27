@@ -1,0 +1,57 @@
+### Variables
+@baseUrl = http://localhost:3000
+@email = test-slug@example.com
+@username = testslug
+@password = Test1234!
+
+### 1. Inscription
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### 2. Connexion
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 3. Token
+@token = {{login.response.body.token}}
+
+### 4. Créer un challenge (génère le slug automatiquement)
+# @name createChallenge
+POST {{baseUrl}}/challenges
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Elden Ring Speedrun Any Percent",
+  "scoreFormat": "time",
+  "description": "Complete the game as fast as possible",
+  "gameId": 326243,
+  "gameTitle": "Elden Ring",
+  "gameSlug": "elden-ring",
+  "gameImageUrl": "https://media.rawg.io/media/games/5ec/5ecac5cb026ec26a56efcc546364e348.jpg"
+}
+
+### 5. Extraire le slug du challenge créé
+@challengeSlug = {{createChallenge.response.body.challenge.slug}}
+
+### 6. Récupérer le challenge PAR SLUG (nouvelle route)
+GET {{baseUrl}}/challenges/{{challengeSlug}}
+
+### 7. Tester avec un slug qui n'existe pas (doit retourner 404)
+GET {{baseUrl}}/challenges/challenge-inexistant
+
+### 8. Récupérer le jeu PAR SLUG
+GET {{baseUrl}}/games/elden-ring

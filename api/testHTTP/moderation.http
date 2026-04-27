@@ -1,0 +1,180 @@
+### Variables (à remplir après les premières requêtes)
+@baseUrl = http://localhost:3000
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliZGZlYy1mYzYwLTcyNzgtOGVkMy05NWM2ODVjNTA4ZTgiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzY5MDcwMjM3LCJleHAiOjE3Njk2NzUwMzd9.bFgd7eHDbikbEOs9a-2ea2H33HBaePir-cT2aXjh-3A
+@aliceToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliZGZlYy1mYzUxLTc3NzctODhlYi0wMDA5Yzk2YzdlMmEiLCJ1c2VybmFtZSI6ImFsaWNlIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NjkwNzAyNTAsImV4cCI6MTc2OTY3NTA1MH0.zDKyMcRJr2ChquI88pGjNLUSF_D6Ltl2G80gS9uyB5Y
+@challengeId = 019bdfec-fd5b-70e7-a7cc-38e585179902
+@participationId = 019bdfec-ff7e-700d-ab72-84bd7dd1873e
+
+###############################################
+# 1. AUTHENTIFICATION
+###############################################
+
+### 1.1 Connexion Admin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Test1234!"
+}
+
+### 1.2 Connexion Alice (user normal)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "Test1234!"
+}
+
+###############################################
+# 2. RÉCUPÉRER DES IDs POUR LES TESTS
+###############################################
+
+### 2.1 Liste des challenges (pour récupérer un challengeId)
+GET {{baseUrl}}/challenges
+
+### 2.2 Détails d'un challenge (copie un slug depuis la réponse ci-dessus)
+GET {{baseUrl}}/challenges/forhonor-rep70
+
+###############################################
+# 3. SIGNALEMENT (USER NORMAL)
+###############################################
+
+### 3.1 Signaler un challenge (avec Alice)
+POST {{baseUrl}}/reports
+Content-Type: application/json
+Cookie: Bearer {{aliceToken}}
+
+{
+  "targetType": "CHALLENGE",
+  "targetId": "{{challengeId}}",
+  "reason": "Ce challenge contient du contenu inapproprié et viole les règles de la communauté."
+}
+
+### 3.2 Signaler une participation (avec Alice)
+POST {{baseUrl}}/reports
+Content-Type: application/json
+Authorization: Bearer {{aliceToken}}
+
+{
+  "targetType": "PARTICIPATION",
+  "targetId": "{{participationId}}",
+  "reason": "Cette participation montre des techniques de triche évidente."
+}
+
+### 3.3 Tenter de signaler le même challenge à nouveau (doit échouer - duplicate)
+POST {{baseUrl}}/reports
+Content-Type: application/json
+Authorization: Bearer {{aliceToken}}
+
+{
+  "targetType": "CHALLENGE",
+  "targetId": "{{challengeId}}",
+  "reason": "Deuxième signalement (ne devrait pas passer)"
+}
+
+### 3.4 Signaler sans être connecté (doit échouer - 401)
+# @no-cookie-jar
+POST {{baseUrl}}/reports
+Content-Type: application/json
+
+{
+  "targetType": "CHALLENGE",
+  "targetId": "{{challengeId}}",
+  "reason": "Signalement anonyme"
+}
+
+### 3.5 Signaler avec raison trop courte (doit échouer - validation)
+POST {{baseUrl}}/reports
+Content-Type: application/json
+Authorization: Bearer {{aliceToken}}
+
+{
+  "targetType": "CHALLENGE",
+  "targetId": "{{challengeId}}",
+  "reason": "Court"
+}
+
+###############################################
+# 4. MODÉRATION (ADMIN UNIQUEMENT)
+###############################################
+
+### 4.1 Voir les challenges signalés (ADMIN)
+GET {{baseUrl}}/moderation/challenges
+Authorization: Bearer {{adminToken}}
+
+### 4.2 Voir les participations signalées (ADMIN)
+GET {{baseUrl}}/moderation/participations
+Authorization: Bearer {{adminToken}}
+
+### 4.3 Tenter de voir les challenges signalés sans être admin (doit échouer - 403)
+GET {{baseUrl}}/moderation/challenges
+Authorization: Bearer {{aliceToken}}
+
+### 4.4 Approuver un challenge signalé (retire les signalements)
+POST {{baseUrl}}/moderation/approve
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "targetType": "CHALLENGE",
+  "targetId": "{{challengeId}}"
+}
+
+### 4.5 Approuver une participation signalée
+POST {{baseUrl}}/moderation/approve
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "targetType": "PARTICIPATION",
+  "targetId": "{{participationId}}"
+}
+
+### 4.6 Supprimer un challenge signalé (suppression définitive + cascade)
+DELETE {{baseUrl}}/moderation/challenge/{{challengeId}}
+Authorization: Bearer {{adminToken}}
+
+### 4.7 Supprimer une participation signalée
+DELETE {{baseUrl}}/moderation/participation/{{participationId}}
+Authorization: Bearer {{adminToken}}
+
+### 4.8 Tenter de supprimer un challenge sans être admin (doit échouer - 403)
+DELETE {{baseUrl}}/moderation/challenge/{{challengeId}}
+Authorization: Bearer {{aliceToken}}
+
+###############################################
+# 5. CAS D'ERREURS À TESTER
+###############################################
+
+### 5.1 Approuver un contenu qui n'existe pas (doit échouer - 404)
+POST {{baseUrl}}/moderation/approve
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "targetType": "CHALLENGE",
+  "targetId": "id-inexistant-123"
+}
+
+### 5.2 Signaler un challenge qui n'existe pas (doit échouer - 404)
+POST {{baseUrl}}/reports
+Content-Type: application/json
+Authorization: Bearer {{aliceToken}}
+
+{
+  "targetType": "CHALLENGE",
+  "targetId": "id-inexistant-456",
+  "reason": "Signalement d'un challenge qui n'existe pas avec une raison suffisamment longue"
+}
+
+### 5.3 Approuver avec un targetType invalide (doit échouer - 400)
+POST {{baseUrl}}/moderation/approve
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "targetType": "INVALID_TYPE",
+  "targetId": "{{challengeId}}"
+}

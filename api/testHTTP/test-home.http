@@ -1,0 +1,48 @@
+### Variables
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMTliYmQyYy1lMGIxLTcyNGYtODkxMi1kMWFlNzBhOGZlN2EiLCJlbWFpbCI6Im5ld3VzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE3Njg0MDUzOTksImV4cCI6MTc2OTAxMDE5OX0.8GmgHoQ7B3IzxBK5XHYIZa6L958tP81CHb_7KvOZs60
+
+### 1. Créer Challenge 1 (Elden Ring)
+POST {{baseUrl}}/challenges
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Speedrun No Hit",
+  "scoreFormat": "time",
+  "description": "Complete without taking damage",
+  "gameId": "326243",
+  "gameTitle": "Elden Ring",
+  "gameImageUrl": "https://media.rawg.io/media/games/5ec/5ecac5cb026ec26a56efcc546364e348.jpg"
+}
+
+### 2. Créer Challenge 2 (God of War)
+POST {{baseUrl}}/challenges
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "God Mode Challenge",
+  "scoreFormat": "score",
+  "description": "Hardest difficulty",
+  "gameId": "622492",
+  "gameTitle": "God of War",
+  "gameImageUrl": "https://media.rawg.io/media/games/4be/4be6a6ad0364751a96229c56bf69be59.jpg"
+}
+
+### 3. Créer Challenge 3 (The Witcher 3)
+POST {{baseUrl}}/challenges
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Death March Speedrun",
+  "scoreFormat": "time",
+  "description": "Complete on hardest difficulty",
+  "gameId": "3328",
+  "gameTitle": "The Witcher 3",
+  "gameImageUrl": "https://media.rawg.io/media/games/618/618c2031a07bbff6b4f611f10b6bcdbc.jpg"
+}
+
+### 4. Tester la route home
+GET {{baseUrl}}/

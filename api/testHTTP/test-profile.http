@@ -1,0 +1,29 @@
+### Variables
+@baseUrl = http://localhost:3000
+@token = YOUR_TOKEN_HERE
+
+### 1. Login pour obtenir un token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "Test1234!"
+}
+
+### 2. Get Profile (récupère les infos utilisateur + challenges + participations)
+GET {{baseUrl}}/profile
+Authorization: Bearer {{token}}
+
+### 3. Update Profile
+PATCH {{baseUrl}}/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "username": "newusername",
+  "email": "newemail@example.com"
+}
+
+### 4. Get Profile sans token (devrait échouer ❌)
+GET {{baseUrl}}/profile

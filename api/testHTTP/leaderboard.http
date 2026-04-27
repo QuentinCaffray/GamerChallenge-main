@@ -1,0 +1,22 @@
+### Variables
+@baseUrl = http://localhost:3000
+
+### ============================================
+### TEST AUTHENTIFIÉ
+### ============================================
+
+### 1. Login Alice (le cookie sera automatiquement sauvegardé)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "Test1234!"
+}
+
+### 2. Leaderboard (utilise automatiquement le cookie de la requête précédente)
+GET {{baseUrl}}/leaderboard
+
+### 3. Autre requête authentifiée (utilise aussi le cookie)
+GET {{baseUrl}}/auth/me
