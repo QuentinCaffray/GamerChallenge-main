@@ -438,7 +438,7 @@ export default function ChallengeDetailsPage() {
         'Content-Type': 'application/json'
       },
       credentials: 'include',
-      body: JSON.stringify({ submissionUrl: link || null, description: desc })
+      body: JSON.stringify({ submissionUrl: link || undefined, description: desc })
     });
 
     if (!res.ok) {
