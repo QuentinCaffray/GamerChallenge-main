@@ -10,59 +10,35 @@ const HOME_TOP_GAMES = 8;
 
 export const getHomeFeed = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Top challenges par nombre de votes
-    const topChallenges = await prisma.challenge.findMany({
+    const topChallengesPromise = prisma.challenge.findMany({
       include: {
         game: true,
-        _count: {
-          select: { votes: true }
-        }
+        _count: { select: { votes: true } }
       },
-      orderBy: {
-        votes: { _count: 'desc' }
-      },
+      orderBy: { votes: { _count: 'desc' } },
       take: HOME_TOP_CHALLENGES
     });
 
-    // On récupère : games + challenges + participations + votes
-    const gamesWithVotes = await prisma.game.findMany({
-      include: {
-        challenges: {
-          include: {
-            participations: {
-              include: {
-                _count: {
-                  select: { votes: true }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
+    // SQL directement pour éviter de charger tous les jeux/challenges/participations en mémoire
+    const topGamesPromise = prisma.$queryRaw<
+      Array<{ id: string; title: string; slug: string; imageUrl: string; totalVotes: bigint }>
+    >`
+      SELECT
+        g.id,
+        g.title,
+        g.slug,
+        g.image_url AS "imageUrl",
+        COALESCE(COUNT(pv.id), 0) AS "totalVotes"
+      FROM games g
+      LEFT JOIN challenges c ON c.game_id = g.id
+      LEFT JOIN participations p ON p.challenge_id = c.id
+      LEFT JOIN participation_votes pv ON pv.participation_id = p.id
+      GROUP BY g.id, g.title, g.slug, g.image_url
+      ORDER BY "totalVotes" DESC
+      LIMIT ${HOME_TOP_GAMES}
+    `;
 
-    // Top games par somme des votes de leurs participations
-    const topGames = gamesWithVotes
-      .map((game) => {
-        const totalVotes = game.challenges.reduce((sum, challenge) => {
-          return (
-            sum +
-            challenge.participations.reduce((pSum, participation) => {
-              return pSum + participation._count.votes;
-            }, 0)
-          );
-        }, 0);
-
-        return {
-          id: game.id,
-          title: game.title,
-          slug: game.slug,
-          imageUrl: game.imageUrl,
-          totalVotes
-        };
-      })
-      .sort((a, b) => b.totalVotes - a.totalVotes)
-      .slice(0, HOME_TOP_GAMES);
+    const [topChallenges, topGamesRaw] = await Promise.all([topChallengesPromise, topGamesPromise]);
 
     res.json({
       topChallenges: topChallenges.map((c) => ({
@@ -70,7 +46,7 @@ export const getHomeFeed = async (req: Request, res: Response, next: NextFunctio
         voteCount: c._count.votes,
         _count: undefined
       })),
-      topGames
+      topGames: topGamesRaw.map((g) => ({ ...g, totalVotes: Number(g.totalVotes) }))
     });
   } catch (error) {
     next(error);

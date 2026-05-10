@@ -10,110 +10,93 @@ const LEADERBOARD_TOP_LIKED = 10;
 
 export const getLeaderboard = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Récupérer l'userId si connecté (optionnel)
     const userId = req.userId || null;
 
-    // Top users par nombre de participations
-    const topByParticipations = await prisma.user.findMany({
+    const topByParticipationsPromise = prisma.user.findMany({
       where: { isDeleted: false },
-      include: {
-        _count: {
-          select: { participations: true }
-        }
-      },
-      orderBy: {
-        participations: { _count: 'desc' }
-      },
+      include: { _count: { select: { participations: true } } },
+      orderBy: { participations: { _count: 'desc' } },
       take: LEADERBOARD_TOP_PARTICIPANTS
     });
 
-    // On récupère : users + participations + votes
-    const usersWithLikes = await prisma.user.findMany({
-      where: { isDeleted: false },
-      include: {
-        participations: {
-          include: {
-            _count: {
-              select: { votes: true }
-            }
-          }
-        }
-      }
-    });
+    // SQL directement pour éviter de charger tous les users/participations/votes en mémoire
+    const topByLikesPromise = prisma.$queryRaw<
+      Array<{ username: string; totalLikes: bigint }>
+    >`
+      SELECT
+        u.username,
+        COALESCE(COUNT(pv.id), 0) AS "totalLikes"
+      FROM users u
+      LEFT JOIN participations p ON p.user_id = u.id
+      LEFT JOIN participation_votes pv ON pv.participation_id = p.id
+      WHERE u.is_deleted = false
+      GROUP BY u.id, u.username
+      ORDER BY "totalLikes" DESC
+      LIMIT ${LEADERBOARD_TOP_LIKED}
+    `;
 
-    // Top users par somme des likes de l'ensemble de leurs participations
-    const topByLikes = usersWithLikes
-      .map((user) => {
-        const totalLikes = user.participations.reduce((sum, participation) => {
-          return sum + participation._count.votes;
-        }, 0);
-        return {
-          id: user.id,
-          username: user.username,
-          totalLikes
-        };
-      })
-      .sort((a, b) => b.totalLikes - a.totalLikes)
-      .slice(0, LEADERBOARD_TOP_LIKED);
+    const [topByParticipations, topByLikesRaw] = await Promise.all([
+      topByParticipationsPromise,
+      topByLikesPromise
+    ]);
 
-    // 🆕 Position de l'utilisateur connecté (si connecté)
     let currentUserRank = null;
 
     if (userId) {
-      // Calculer le classement complet pour les participations
-      const allUsersByParticipations = await prisma.user.findMany({
-        where: { isDeleted: false },
-        include: {
-          _count: {
-            select: { participations: true }
+      // Une seule requête SQL avec RANK() pour les deux classements en même temps
+      const [userRank] = await prisma.$queryRaw<
+        Array<{
+          participationRank: bigint;
+          participationCount: bigint;
+          likesRank: bigint;
+          totalLikes: bigint;
+        }>
+      >`
+        SELECT
+          participation_rank AS "participationRank",
+          participation_count AS "participationCount",
+          likes_rank AS "likesRank",
+          total_likes AS "totalLikes"
+        FROM (
+          SELECT
+            u.id,
+            RANK() OVER (ORDER BY COUNT(DISTINCT p.id) DESC) AS participation_rank,
+            COUNT(DISTINCT p.id) AS participation_count,
+            RANK() OVER (ORDER BY COUNT(pv.id) DESC) AS likes_rank,
+            COUNT(pv.id) AS total_likes
+          FROM users u
+          LEFT JOIN participations p ON p.user_id = u.id
+          LEFT JOIN participation_votes pv ON pv.participation_id = p.id
+          WHERE u.is_deleted = false
+          GROUP BY u.id
+        ) ranked
+        WHERE id = ${userId}
+      `;
+
+      if (userRank) {
+        currentUserRank = {
+          byParticipations: {
+            rank: Number(userRank.participationRank),
+            participationCount: Number(userRank.participationCount)
+          },
+          byLikes: {
+            rank: Number(userRank.likesRank),
+            totalLikes: Number(userRank.totalLikes)
           }
-        },
-        orderBy: {
-          participations: { _count: 'desc' }
-        }
-      });
-
-      // Trouver la position dans topByParticipations
-      const participationRank = allUsersByParticipations.findIndex((u) => u.id === userId) + 1;
-      const participationCount =
-        allUsersByParticipations.find((u) => u.id === userId)?._count.participations || 0;
-
-      // Calculer le classement complet pour les likes
-      const allUsersByLikes = usersWithLikes
-        .map((user) => {
-          const totalLikes = user.participations.reduce((sum, participation) => {
-            return sum + participation._count.votes;
-          }, 0);
-          return {
-            id: user.id,
-            username: user.username,
-            totalLikes
-          };
-        })
-        .sort((a, b) => b.totalLikes - a.totalLikes);
-
-      // Trouver la position dans topByLikes
-      const likesRank = allUsersByLikes.findIndex((u) => u.id === userId) + 1;
-      const totalLikes = allUsersByLikes.find((u) => u.id === userId)?.totalLikes || 0;
-
-      currentUserRank = {
-        byParticipations: {
-          rank: participationRank,
-          participationCount
-        },
-        byLikes: {
-          rank: likesRank,
-          totalLikes
-        }
-      };
+        };
+      }
     }
+
     res.json({
       topByParticipations: topByParticipations.map((u) => ({
         username: u.username,
         participationCount: u._count.participations
       })),
-      topByLikes,
-      currentUserRank // 🆕 null si non connecté, objet si connecté
+      topByLikes: topByLikesRaw.map((u) => ({
+        username: u.username,
+        totalLikes: Number(u.totalLikes)
+      })),
+      currentUserRank
     });
   } catch (error) {
     next(error);
